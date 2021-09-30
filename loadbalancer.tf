@@ -8,6 +8,12 @@ resource "volterra_namespace" "this" {
   name  = var.volterra_namespace
 }
 
+resource "time_sleep" "waiting" {
+  depends_on = [volterra_namespace.this]
+
+  create_duration = "10s"
+}
+
 resource "volterra_origin_pool" "this" {
   for_each               = toset(var.eks_only ? [] : [var.skg_name])
   name                   = format("%s-server", var.skg_name)
@@ -49,6 +55,7 @@ resource "volterra_waf" "this" {
       app_profile
     ]
   }
+  depends_on = [time_sleep.waiting]
 }
 
 resource "volterra_http_loadbalancer" "this" {
